@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AltAyu - Find Ayurvedic Alternatives</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #f5f7f5;
+            min-height: 100vh;
+            color: #2d5016;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #1b5e20;
+            margin-bottom: 0.3rem;
+            letter-spacing: 2px;
+        }
+
+        .tagline {
+            color: #666;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .input-section {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .method-btn {
+            padding: 0.8rem;
+            background: white;
+            border: 1px solid #66bb6a;
+            color: #2e7d32;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .method-btn.active {
+            background: #66bb6a;
+            color: white;
+        }
+
+        .method-btn:hover {
+            background: #81c784;
+            color: white;
+        }
+
+        .input-container {
+            display: none;
+        }
+
+        .input-container.active {
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            min-height: 80px;
+            color: #2d5016;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #66bb6a;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            width: 100%;
+            padding: 2rem;
+            border: 2px dashed #66bb6a;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+
+        .file-input-wrapper:hover {
+            background: #f1f8e9;
+        }
+
+        .file-input-wrapper input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+
+        .file-label {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        #preview {
+            margin: 1rem auto 0;
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 6px;
+            display: none;
+            border: 1px solid #e0e0e0;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: #66bb6a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.2s;
+        }
+
+        .analyze-btn:hover {
+            background: #4caf50;
+        }
+
+        .analyze-btn:disabled {
+            background: #c8e6c9;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            color: #558b2f;
+            font-size: 0.9rem;
+            padding: 2rem;
+            display: none;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .results {
+            display: none;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            height: calc(100vh - 350px);
+            min-height: 500px;
+        }
+
+        .results.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .result-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
+            overflow: hidden;
+        }
+
+        .result-card h2 {
+            color: #1b5e20;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 0.6rem;
+            flex-shrink: 0;
+        }
+
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .scrollable-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollable-content::-webkit-scrollbar-track {
+            background: #f5f5f5;
+            border-radius: 3px;
+        }
+
+        .scrollable-content::-webkit-scrollbar-thumb {
+            background: #66bb6a;
+            border-radius: 3px;
+        }
+
+        .scrollable-content::-webkit-scrollbar-thumb:hover {
+            background: #4caf50;
+        }
+
+        .medicine-name {
+            font-size: 1rem;
+            color: #2e7d32;
+            margin-bottom: 0.4rem;
+            font-weight: bold;
+            padding: 0.6rem;
+            background: #f1f8e9;
+            border-radius: 4px;
+            border-left: 3px solid #1b5e20;
+        }
+
+        .medicine-category {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .content-item {
+            background: #fafafa;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            border-radius: 4px;
+            border-left: 3px solid #66bb6a;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.4rem;
+            gap: 0.5rem;
+        }
+
+        .content-name {
+            font-weight: bold;
+            color: #1b5e20;
+            font-size: 0.85rem;
+        }
+
+        .content-dosage {
+            background: #66bb6a;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            white-space: nowrap;
+        }
+
+        .content-desc {
+            color: #666;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            margin-top: 0.3rem;
+        }
+
+        .content-purpose {
+            color: #2e7d32;
+            font-size: 0.75rem;
+            margin-top: 0.3rem;
+        }
+
+        .alternative-item {
+            background: #fafafa;
+            padding: 0.9rem;
+            margin-bottom: 0.9rem;
+            border-radius: 4px;
+            border-left: 3px solid #4caf50;
+        }
+
+        .alt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.6rem;
+            gap: 0.5rem;
+        }
+
+        .alt-name {
+            font-weight: bold;
+            color: #1b5e20;
+            font-size: 0.9rem;
+        }
+
+        .alt-type {
+            background: #66bb6a;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+        }
+
+        .alt-addresses {
+            background: #f1f8e9;
+            padding: 0.6rem;
+            border-radius: 4px;
+            margin-bottom: 0.6rem;
+            font-size: 0.75rem;
+        }
+
+        .alt-label {
+            color: #2e7d32;
+            font-weight: bold;
+            margin-bottom: 0.2rem;
+            font-size: 0.75rem;
+        }
+
+        .alt-content {
+            color: #666;
+            font-size: 0.75rem;
+        }
+
+        .alt-dosage-section {
+            background: white;
+            padding: 0.8rem;
+            border-radius: 4px;
+            margin-top: 0.6rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .dosage-title {
+            color: #1b5e20;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .dosage-item {
+            margin-bottom: 0.3rem;
+            padding-left: 1rem;
+            position: relative;
+            font-size: 0.75rem;
+        }
+
+        .dosage-item:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #66bb6a;
+        }
+
+        .dosage-label {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .dosage-value {
+            color: #666;
+        }
+
+        .alt-desc {
+            color: #666;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            margin-top: 0.6rem;
+        }
+
+        .alt-benefits {
+            margin-top: 0.6rem;
+            padding: 0.7rem;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .benefits-title {
+            color: #2e7d32;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .benefit-item {
+            color: #666;
+            font-size: 0.75rem;
+            padding-left: 1rem;
+            position: relative;
+            margin-bottom: 0.2rem;
+        }
+
+        .benefit-item:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #66bb6a;
+        }
+
+        .precautions {
+            background: #fff3e0;
+            border-left: 3px solid #ff9800;
+            padding: 0.7rem;
+            margin-top: 0.6rem;
+            border-radius: 4px;
+        }
+
+        .precautions-title {
+            color: #e65100;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .precaution-text {
+            color: #666;
+            font-size: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .error {
+            background: #ffebee;
+            border: 1px solid #ef5350;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+            font-size: 0.85rem;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .results {
+                height: auto;
+                min-height: auto;
+            }
+
+            .results.active {
+                grid-template-columns: 1fr;
+            }
+
+            .result-card {
+                max-height: 60vh;
+            }
+
+            .input-methods {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AltAyu</h1>
+            <p class="tagline">ayurvedic alternatives to modern medicine</p>
+        </header>
+
+        <div class="input-section">
+            <div class="input-methods">
+                <button class="method-btn active" onclick="switchMethod('text')">text input</button>
+                <button class="method-btn" onclick="switchMethod('image')">upload image</button>
+            </div>
+
+            <div id="text-input" class="input-container active">
+                <textarea id="textInput" placeholder="enter medicine name or symptoms..."></textarea>
+            </div>
+
+            <div id="image-input" class="input-container">
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+                    <div class="file-label">
+                        <div>click to upload or drag & drop</div>
+                    </div>
+                </div>
+                <img id="preview" alt="Preview">
+            </div>
+
+            <button class="analyze-btn" onclick="analyzeInput()">analyze</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div>analyzing...</div>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="results" id="results">
+            <div class="result-card">
+                <h2>medicine analysis</h2>
+                <div class="scrollable-content" id="medicineContent"></div>
+            </div>
+
+            <div class="result-card">
+                <h2>ayurvedic alternatives</h2>
+                <div class="scrollable-content" id="ayurvedicContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
