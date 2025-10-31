@@ -1,5 +1,5 @@
 // Configuration
-const GROQ_API_KEY = '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'; 
+const GROQ_API_KEY = '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'; 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 let currentMethod = 'text';
